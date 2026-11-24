@@ -1,46 +1,72 @@
-# Search for Windows (working port)
+# BBroswer — Windows port of Search
 
-A Windows-native reimplementation of [Search](https://github.com/driceroland/Search), the minimalist macOS browser by Office Commun. This repository is an independent Windows port; it does not contain or modify the upstream macOS source.
+An independent Windows-native reimplementation inspired by [Search](https://github.com/driceroland/Search), the minimalist macOS browser by Office Commun. This repository is a clean-room Windows implementation and does not modify the upstream project.
 
-## Status
+## Build status
 
-**Early foundation / not feature-parity.** The macOS app is a ~42k-line SwiftUI + AppKit + WKWebView browser. Windows cannot run that code directly. This port uses C#/.NET 8, WPF and Microsoft Edge WebView2 (Chromium). The first milestone is a usable minimal browser shell with tabs, address/search input, navigation and session basics. macOS-only services (iCloud sync, Handoff, Keychain, WKWebExtension) need Windows-native replacements and are not claimed to work.
+This is an **early, actively developed port**, not full feature parity yet. It uses C#/.NET 8, WPF and Microsoft Edge WebView2 (Chromium). The Windows CI workflow builds the app and publishes a downloadable x64 artifact.
+
+## Implemented in the current code
+
+- Minimal dark UI with a left-side tab rail
+- Multiple tabs, tab switching and closing
+- Address/search field with URL detection
+- Back, forward, reload and keyboard shortcuts
+- Session restoration (up to 12 restored tabs; 30 saved)
+- Local JSON storage for bookmarks, history and downloads
+- Private tabs using isolated temporary WebView2 data folders; private visits are excluded from saved history/session
+- Basic network request blocking using a small built-in domain denylist
+- Reader-style page formatting toggle
+- Picture-in-picture request for the page's first video
+- Hide-one-element mode (next click)
+- Download routing to the user's Downloads folder
+
+## Not yet implemented / limitations
+
+- Full EasyList/uBlock filter compatibility and per-site block controls
+- Chrome extension installation/management parity
+- Password manager, encrypted credential storage and import
+- Split view, pinned tabs, profiles/spaces and advanced session model
+- Cloud sync / Handoff (Apple-only features need a separate Windows sync design)
+- Native app updater and signed installer
+- Full reader extraction, persistent element-hiding rules and download manager controls
+
+The current private-tab isolation uses a separate temporary WebView2 user-data folder per private tab. Closing a private tab attempts to remove that folder. It is not a forensic privacy guarantee; WebView2 and Windows may retain OS-level traces.
 
 ## Requirements
 
-- Windows 10 (1903+) or Windows 11, x64
-- .NET 8 SDK
-- Microsoft Edge WebView2 Runtime (normally installed with Edge)
+- Windows 10 or Windows 11, x64
+- .NET 8 runtime for framework-dependent local builds, or use the self-contained CI artifact
+- Microsoft Edge WebView2 Runtime (normally present on Windows with Edge)
 
-## Build
+## Build locally
 
 ```powershell
-dotnet restore
-dotnet build -c Release
-dotnet run
+dotnet restore Search.Windows.csproj
+dotnet build Search.Windows.csproj -c Release
+dotnet run --project Search.Windows.csproj
 ```
 
-## Current shortcuts
+## Download CI build
+
+Open [Actions](https://github.com/DOckTV/BBroswer/actions), select the latest successful **Windows build**, and download the `BBroswer-Windows-x64` artifact. Extract it and run `Search.Windows.exe`. WebView2 Runtime is still required.
+
+## Shortcuts
 
 | Shortcut | Action |
 |---|---|
 | Ctrl+L | Focus address field |
 | Ctrl+T | New tab |
-| Ctrl+W | Close current tab |
-| Ctrl+R / F5 | Reload |
-| Alt+Left / Alt+Right | Back / forward |
+| Ctrl+W | Close tab |
+| Ctrl+R | Reload |
+| Ctrl+D | Bookmark current page |
+| Ctrl+H | History |
+| Ctrl+J | Downloads |
 | Enter in address field | Navigate or search |
-
-## Architecture
-
-- **WPF** owns the window chrome and tab strip.
-- **WebView2** hosts web content using the installed Edge runtime.
-- Browser state is deliberately kept separate from web content.
-- Future milestones: persisted tabs/history/bookmarks, private profiles, content blocking, reader mode, per-site element hiding, downloads UI, picture-in-picture, extension support and settings.
 
 ## Upstream
 
-- Original project: https://github.com/driceroland/Search
+- Original source: https://github.com/driceroland/Search
 - Website: https://searchbrowser.app
 
-Please consult the upstream repository's license and preserve its attribution when reusing any code or assets. This initial Windows foundation is a clean-room implementation of the browser shell and does not copy upstream source files.
+Please retain upstream attribution when reusing upstream code or assets. The current browser UI and Windows-specific code are independently written.
