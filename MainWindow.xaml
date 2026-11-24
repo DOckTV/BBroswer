@@ -23,8 +23,7 @@
             </ItemsControl.ItemsPanel>
             <ItemsControl.ItemTemplate>
               <DataTemplate>
-                <Border Background="{Binding IsSelected, Converter={x:Static BooleanToVisibilityConverter.Instance}}"
-                        Margin="2,5" CornerRadius="7">
+                <Border Background="#FF292929" Margin="2,5" CornerRadius="7">
                   <DockPanel>
                     <Button Content="{Binding Title}" Tag="{Binding}" Click="SelectTab_Click"
                             MaxWidth="190" Padding="12,7" />
