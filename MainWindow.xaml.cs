@@ -45,7 +45,8 @@ public partial class MainWindow : Window
             ? Path.Combine(Path.GetTempPath(), "SearchWindowsPrivate", Guid.NewGuid().ToString("N"))
             : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SearchWindows", "WebView2");
         Directory.CreateDirectory(tab.UserDataPath);
-        var env = await CoreWebView2Environment.CreateAsync(null, tab.UserDataPath);
+        var options = new CoreWebView2EnvironmentOptions { AreBrowserExtensionsEnabled = !isPrivate };
+        var env = await CoreWebView2Environment.CreateAsync(null, tab.UserDataPath, options);
         await view.EnsureCoreWebView2Async(env);
         var core = view.CoreWebView2;
         core.Settings.AreDefaultContextMenusEnabled = true;
@@ -191,12 +192,39 @@ public partial class MainWindow : Window
     {
         var panel = new StackPanel { Margin = new Thickness(20) };
         var block = new CheckBox { Content = "Block known advertising and tracking hosts", IsChecked = _adBlockEnabled, Foreground = System.Windows.Media.Brushes.White, Margin = new Thickness(0, 10, 0, 20) };
-        var note = new TextBlock { Text = "This first Windows build uses a local host denylist. Reader mode and picture-in-picture are available from the page menu. Chrome extension compatibility, cloud sync and password migration are still future work.", Foreground = System.Windows.Media.Brushes.LightGray, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 20) };
+        var note = new TextBlock { Text = "Install unpacked Chromium extensions from a local folder containing manifest.json. Private tabs do not load extensions. Cloud sync and password migration are still future work.", Foreground = System.Windows.Media.Brushes.LightGray, TextWrapping = TextWrapping.Wrap, Margin = new Thickness(0, 0, 0, 20) };
         var win = new Window { Title = "Settings", Owner = this, Width = 480, Height = 280, Background = new System.Windows.Media.SolidColorBrush(System.Windows.Media.Color.FromRgb(34,34,34)), Content = panel };
+        var install = new Button { Content = "Install unpacked extension", HorizontalAlignment = HorizontalAlignment.Left, Margin = new Thickness(0, 0, 0, 12) };
+        install.Click += async (_, _) => await InstallExtensionAsync();
         var save = new Button { Content = "Save settings", HorizontalAlignment = HorizontalAlignment.Right };
         save.Click += (_, _) => { _adBlockEnabled = block.IsChecked == true; win.Close(); };
-        panel.Children.Add(block); panel.Children.Add(note); panel.Children.Add(save);
+        panel.Children.Add(block); panel.Children.Add(note); panel.Children.Add(install); panel.Children.Add(save);
         win.ShowDialog();
+    }
+
+
+    private async Task InstallExtensionAsync()
+    {
+        if (_active?.View?.CoreWebView2 is not { } core)
+        {
+            MessageBox.Show(this, "Open a regular browser tab before installing an extension.", "Extensions");
+            return;
+        }
+        var picker = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Select an unpacked Chromium extension folder",
+            Multiselect = false
+        };
+        if (picker.ShowDialog(this) != true) return;
+        try
+        {
+            var extension = await core.Profile.AddBrowserExtensionAsync(picker.FolderName);
+            MessageBox.Show(this, $"Installed {extension.Name}. It is enabled for this browser profile.", "Extension installed");
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show(this, $"Could not install extension. Select the unpacked extension's top-level folder containing manifest.json.\\n\\n{ex.Message}", "Extension install failed");
+        }
     }
 
     private void PageMenu_Click(object sender, RoutedEventArgs e)
