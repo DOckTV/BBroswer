@@ -91,7 +91,7 @@ public partial class MainWindow : Window
         view.Visibility = Visibility.Collapsed;
         tab.UserDataPath = isPrivate
             ? Path.Combine(Path.GetTempPath(), "BBroswerPrivate", Guid.NewGuid().ToString("N"))
-            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BBroswer", "WebView2");
+            : Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SearchWindows", "WebView2");
         Directory.CreateDirectory(tab.UserDataPath);
 
         try
@@ -239,7 +239,7 @@ public partial class MainWindow : Window
     {
         _store.State.OpenTabs = _tabs.Where(t => !t.IsPrivate)
             .Select(t => t.Url).Where(u => !string.IsNullOrWhiteSpace(u)).Take(30).ToList();
-        _store.State.LastUrl = _active is { IsPrivate: false } ? _active.Url : null;
+        _store.State.LastUrl = (_active is { IsPrivate: false } ? _active : _tabs.LastOrDefault(t => !t.IsPrivate))?.Url;
         _store.State.AdBlockEnabled = _adBlockEnabled;
         await _store.SaveAsync();
     }
