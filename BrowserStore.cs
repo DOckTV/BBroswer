@@ -5,7 +5,7 @@ namespace Search.Windows;
 
 public sealed class BrowserStore
 {
-    private readonly string _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "BBroswer");
+    private readonly string _folder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "SearchWindows");
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private string FilePath => Path.Combine(_folder, "browser-data.json");
     public BrowserState State { get; private set; } = new();
