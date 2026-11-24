@@ -17,6 +17,7 @@ This is an **early, actively developed port**, not full feature parity yet. It u
 - Private tabs using isolated temporary WebView2 data folders; private visits are excluded from saved history/session
 - Basic network request blocking using a small built-in domain denylist
 - Reader-style page formatting toggle
+- Unpacked Chromium extension installation through WebView2's extension API (regular profile only)
 - Picture-in-picture request for the page's first video
 - Hide-one-element mode (next click)
 - Download routing to the user's Downloads folder
@@ -24,7 +25,7 @@ This is an **early, actively developed port**, not full feature parity yet. It u
 ## Not yet implemented / limitations
 
 - Full EasyList/uBlock filter compatibility and per-site block controls
-- Chrome extension installation/management parity
+- Full Chrome Web Store integration and extension management UI
 - Password manager, encrypted credential storage and import
 - Split view, pinned tabs, profiles/spaces and advanced session model
 - Cloud sync / Handoff (Apple-only features need a separate Windows sync design)
