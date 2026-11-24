@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -404,8 +405,35 @@ public partial class MainWindow : Window
         AddMenu(menu, "Reader appearance", async () => await core.ExecuteScriptAsync("(()=>{let old=document.getElementById('__bb_reader');if(old){old.remove();return;}let s=document.createElement('style');s.id='__bb_reader';s.textContent='body{max-width:760px!important;margin:40px auto!important;padding:40px!important;font:20px/1.75 Georgia,serif!important;background:#f5f1e8!important;color:#222!important}img,video{max-width:100%!important;height:auto!important}';document.head.appendChild(s);})();"));
         AddMenu(menu, "Picture in picture", async () => await core.ExecuteScriptAsync("document.querySelector('video')?.requestPictureInPicture?.()"));
         AddMenu(menu, "Hide next clicked element", async () => await core.ExecuteScriptAsync("(()=>{if(window.__bbHideMode)return;window.__bbHideMode=true;document.addEventListener('click',function h(e){e.preventDefault();e.stopPropagation();e.target.style.setProperty('display','none','important');document.removeEventListener('click',h,true);window.__bbHideMode=false;},true);})();"));
-        AddMenu(menu, "Find on page", async () => await core.ExecuteScriptAsync("window.find(prompt('Find text on this page')||'')"));
+        AddMenu(menu, "Find on page", async () => await FindOnPageAsync(core));
         menu.IsOpen = true;
+    }
+
+
+    private async Task FindOnPageAsync(CoreWebView2 core)
+    {
+        var panel = new StackPanel { Margin = new Thickness(18) };
+        var field = new TextBox { MinWidth = 300, Margin = new Thickness(0, 10, 0, 14), ToolTip = "Text to find" };
+        var find = new Button { Content = "Find next", HorizontalAlignment = HorizontalAlignment.Right,
+            Background = new SolidColorBrush(Color.FromRgb(183, 216, 197)),
+            Foreground = new SolidColorBrush(Color.FromRgb(24, 35, 29)), FontWeight = FontWeights.SemiBold };
+        var window = new Window { Title = "Find on page", Owner = this, SizeToContent = SizeToContent.WidthAndHeight,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner, Background = new SolidColorBrush(Color.FromRgb(29, 33, 37)),
+            Content = panel, ResizeMode = ResizeMode.NoResize };
+        find.Click += async (_, _) =>
+        {
+            var query = field.Text.Trim();
+            if (query.Length == 0) return;
+            var found = await core.ExecuteScriptAsync($"window.find({JsonSerializer.Serialize(query)}, false, false, true)");
+            StatusText.Text = found == "true" ? $"Found: {query}" : $"No more matches: {query}";
+            field.Focus();
+            field.SelectAll();
+        };
+        field.KeyDown += (_, args) => { if (args.Key == Key.Enter) { find.RaiseEvent(new RoutedEventArgs(Button.ClickEvent)); args.Handled = true; } };
+        panel.Children.Add(new TextBlock { Text = "Find text in the current page", Foreground = Brushes.White, FontSize = 14 });
+        panel.Children.Add(field); panel.Children.Add(find);
+        window.Loaded += (_, _) => field.Focus();
+        window.ShowDialog();
     }
 
     private static void AddMenu(ContextMenu menu, string label, Func<Task> action)
@@ -428,7 +456,7 @@ public partial class MainWindow : Window
                 case Key.D: Bookmark_Click(this, new RoutedEventArgs()); e.Handled = true; break;
                 case Key.H: ShowHistory_Click(this, new RoutedEventArgs()); e.Handled = true; break;
                 case Key.J: ShowDownloads_Click(this, new RoutedEventArgs()); e.Handled = true; break;
-                case Key.F: PageMenu_Click(this, new RoutedEventArgs()); e.Handled = true; break;
+                case Key.F: if (_active?.View?.CoreWebView2 is { } findCore) await FindOnPageAsync(findCore); e.Handled = true; break;
             }
         }
         else if (Keyboard.Modifiers == (ModifierKeys.Control | ModifierKeys.Shift) && e.Key == Key.N)
