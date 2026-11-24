@@ -35,7 +35,7 @@ This is an early, actively developed browser foundation—not a complete feature
 - Microsoft Edge WebView2 Runtime
 - The self-contained CI artifact includes the .NET app runtime; WebView2 Runtime remains a system dependency
 
-## Run from source
+Browser data and the existing WebView2 profile are kept in `%LOCALAPPDATA%\\SearchWindows` so upgrades from the earlier build retain saved data and browser sessions.\n\n## Run from source
 
 Install the [.NET 8 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/8.0), then:
 
@@ -46,7 +46,7 @@ dotnet run --project Search.Windows.csproj
 
 ## Download a Windows build
 
-Open [GitHub Actions](https://github.com/DOckTV/BBroswer/actions), choose the latest successful **Windows build**, and download the `BBroswer-Windows-x64` artifact. Extract the ZIP and run `Search.Windows.exe`.
+Open [GitHub Actions](https://github.com/DOckTV/BBroswer/actions), choose the latest successful **Windows build**, and download the `BBroswer-Windows-x64` artifact. Extract the ZIP and run `BBroswer.exe`.
 
 ## Shortcuts
 
