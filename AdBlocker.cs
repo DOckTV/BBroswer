@@ -6,7 +6,7 @@ public static class AdBlocker
     private static readonly HashSet<string> Hosts = new(StringComparer.OrdinalIgnoreCase)
     {
         "doubleclick.net", "googlesyndication.com", "googleadservices.com",
-        "adservice.google.com", "adnxs.com", "adsrvr.org", " taboola.com".Trim(),
+        "adservice.google.com", "adnxs.com", "adsrvr.org", "taboola.com",
         "outbrain.com", "scorecardresearch.com", "amazon-adsystem.com",
         "adform.net", "criteo.com", "hotjar.com", "branch.io",
         "connect.facebook.net", "analytics.tiktok.com", "bat.bing.com",
